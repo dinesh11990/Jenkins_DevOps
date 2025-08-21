@@ -1,0 +1,14 @@
+pipeline {
+    agent {
+        docker { image 'maven:3.9.2-openjdk-17' }
+    }
+    stages {
+        stage('Run Java') {
+            steps {
+                sh 'echo "public class App { public static void main(String[] args) { System.out.println(\"Hello Jenkins!\"); } }" > App.java'
+                sh 'echo "<project xmlns=\\"http://maven.apache.org/POM/4.0.0\\"><modelVersion>4.0.0</modelVersion><groupId>com.example</groupId><artifactId>hello</artifactId><version>1.0</version><build><plugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.0.0</version><configuration><mainClass>App</mainClass></configuration></plugin></plugins></build></project>" > pom.xml'
+                sh 'mvn compile exec:java'
+            }
+        }
+    }
+}
