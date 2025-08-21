@@ -4,19 +4,20 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/dinesh11990/Jenkins_DevOps'
+                // Explicitly tell Jenkins to use 'main' branch
+                git branch: 'main', url: 'https://github.com/dinesh11990/Jenkins_DevOps'
             }
         }
 
-        stage('Compile') {
+        stage('Build') {
             steps {
-                sh 'javac HelloWorld.java'
+                sh 'mvn clean compile'
             }
         }
 
         stage('Run') {
             steps {
-                sh 'java HelloWorld'
+                sh 'mvn exec:java -Dexec.mainClass="com.example.App"'
             }
         }
     }
