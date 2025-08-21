@@ -1,0 +1,72 @@
+pipeline {
+    agent none
+    stages {
+        stage('Back-end') {
+            agent {
+                docker { image 'maven:3.9.2-openjdk-17' }
+            }
+            steps {
+                echo "Back-end stage: compile and run Java HelloWorld"
+                
+                // Create a simple Java file inside workspace
+                sh '''
+                mkdir -p src/main/java/com/example
+                cat > src/main/java/com/example/App.java <<EOL
+                package com.example;
+
+                public class App {
+                    public static void main(String[] args) {
+                        System.out.println("Hello from Jenkins pipeline!");
+                    }
+                }
+                EOL
+                '''
+                
+                # Initialize a simple Maven project on the fly
+                sh '''
+                cat > pom.xml <<EOL
+                <project xmlns="http://maven.apache.org/POM/4.0.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>jenkins-hello</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                    <properties>
+                        <maven.compiler.source>17</maven.compiler.source>
+                        <maven.compiler.target>17</maven.compiler.target>
+                    </properties>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>exec-maven-plugin</artifactId>
+                                <version>3.0.0</version>
+                                <configuration>
+                                    <mainClass>com.example.App</mainClass>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                EOL
+                '''
+
+                // Compile and run
+                sh 'mvn clean compile exec:java'
+            }
+        }
+
+        stage('Front-end') {
+            agent {
+                docker { image 'node:18-alpine' }
+            }
+            steps {
+                echo "Front-end stage: Node version check"
+                sh 'node --version'
+            }
+        }
+    }
+}
+
